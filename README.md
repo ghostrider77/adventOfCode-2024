@@ -5,11 +5,11 @@
 
 **Run** (interpreted)
 ```bash
-cat input.txt | runhaskell `day[xy][a|b].hs`
+cat input.txt | runhaskell day01a.hs
 ```
 
 **Compile and Run**:
 ```bash
-ghc -O2 -o prog `day[xy][a|b].hs`
+ghc -O2 -o prog day01a.hs
 cat input.txt | ./prog
 ```
