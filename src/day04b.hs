@@ -17,23 +17,20 @@ parseInput ls@(line : _) =
     in Board {board = M.fromList cells, nrRows, nrCols}
 
 
-isXMasWindow :: Board -> Cell -> Bool
-isXMasWindow (Board board _ _) cell@(Cell x y) =
-    let topLeft = board ! cell
-        topRight = board ! Cell x (y + 2)
-        middle = board ! Cell (x + 1) (y + 1)
-        bottomLeft = board ! Cell (x + 2) y
-        bottomRight = board ! Cell (x + 2) (y + 2)
-        config1 = topLeft == 'M' && topRight == 'S' && bottomLeft == 'M' && bottomRight == 'S' && middle == 'A'
-        config2 = topLeft == 'M' && topRight == 'M' && bottomLeft == 'S' && bottomRight == 'S' && middle == 'A'
-        config3 = topLeft == 'S' && topRight == 'S' && bottomLeft == 'M' && bottomRight == 'M' && middle == 'A'
-        config4 = topLeft == 'S' && topRight == 'M' && bottomLeft == 'S' && bottomRight == 'M' && middle == 'A'
-    in config1 || config2 || config3 || config4
-
-
 countXMasWindows :: Board -> Int
-countXMasWindows brd@(Board board nrRows nrCols) =
-    sum [1 | ix <- [0..(nrRows-3)], jy <- [0..(nrCols-3)], isXMasWindow brd (Cell ix jy)]
+countXMasWindows (Board board nrRows nrCols) =
+    let isXMasWindow cell@(Cell x y) =
+            let topLeft = board ! cell
+                topRight = board ! Cell x (y + 2)
+                middle = board ! Cell (x + 1) (y + 1)
+                bottomLeft = board ! Cell (x + 2) y
+                bottomRight = board ! Cell (x + 2) (y + 2)
+                config1 = topLeft == 'M' && topRight == 'S' && bottomLeft == 'M' && bottomRight == 'S' && middle == 'A'
+                config2 = topLeft == 'M' && topRight == 'M' && bottomLeft == 'S' && bottomRight == 'S' && middle == 'A'
+                config3 = topLeft == 'S' && topRight == 'S' && bottomLeft == 'M' && bottomRight == 'M' && middle == 'A'
+                config4 = topLeft == 'S' && topRight == 'M' && bottomLeft == 'S' && bottomRight == 'M' && middle == 'A'
+            in config1 || config2 || config3 || config4
+    in sum [1 | ix <- [0..(nrRows-3)], jy <- [0..(nrCols-3)], isXMasWindow (Cell ix jy)]
 
 
 main :: IO ()
