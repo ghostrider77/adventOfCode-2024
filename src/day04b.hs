@@ -1,10 +1,8 @@
 import Data.Map (Map, (!))
 import qualified Data.Map as M
-import Data.List (isPrefixOf, tails)
 
 data Cell = Cell Int Int deriving (Eq, Ord)
 data Board = Board {board :: Map Cell Char, nrRows :: Int, nrCols :: Int}
-newtype SecretWord = SecretWord String
 
 
 parseInput :: [String] -> Board
