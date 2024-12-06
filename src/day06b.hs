@@ -41,31 +41,25 @@ getNextDirection Down = Left
 getNextDirection Left = Up
 
 
-isValidCoord :: Puzzle -> Coord -> Bool
-isValidCoord (Puzzle _ nrRows nrCols) (Coord x y) = 0 <= x && x < nrRows && 0 <= y && y < nrCols
-
-
-getCoords :: Puzzle -> Coord -> Direction -> [Coord]
-getCoords puzzle (Coord x y) direction =
-    let ray = case direction of
-            Up -> map (\k -> Coord (x - k) y) [0..]
-            Right -> map (\k -> Coord x (y + k)) [0..]
-            Down -> map (\k -> Coord (x + k) y) [0..]
-            Left -> map (\k -> Coord x (y - k)) [0..]
-    in takeWhile (isValidCoord puzzle) ray
-
-
 followTheGuard :: Puzzle -> Coord -> Maybe (Set (Coord, Direction))
 followTheGuard puzzle@(Puzzle board nrRows nrCols) startCoord =
-    let go visitedCoords coord direction =
-            let lineCoordinates = getCoords puzzle coord direction
+    let getCoords (Coord x0 y0) direction =
+            let isValidCoord (Coord x y) = 0 <= x && x < nrRows && 0 <= y && y < nrCols
+                ray = case direction of
+                    Up -> map (\k -> Coord (x0 - k) y0) [0..]
+                    Right -> map (\k -> Coord x0 (y0 + k)) [0..]
+                    Down -> map (\k -> Coord (x0 + k) y0) [0..]
+                    Left -> map (\k -> Coord x0 (y0 - k)) [0..]
+            in takeWhile isValidCoord ray
+        go visitedCoords coord direction =
+            let lineCoordinates = getCoords coord direction
             in case find (\c -> board ! c == Obstacle) lineCoordinates of
                 Nothing -> Just $ S.union visitedCoords (S.fromList $ map (, direction) lineCoordinates)
                 Just obstacleCoord ->
                     let pathCoords = takeWhile (/= obstacleCoord) lineCoordinates
                         coord' = last pathCoords
                         direction' = getNextDirection direction
-                        inLoop = any (\c -> S.member (c, direction) visitedCoords) $ S.fromList pathCoords
+                        inLoop = any (\c -> S.member (c, direction) visitedCoords) pathCoords
                         visitedCoords' = S.union visitedCoords (S.fromList $ map (, direction) pathCoords)
                     in if inLoop then Nothing else go visitedCoords' coord' direction'
     in go S.empty startCoord Up
