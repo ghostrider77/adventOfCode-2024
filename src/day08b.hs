@@ -1,6 +1,6 @@
 import Control.Monad (guard)
 import Data.List (subsequences)
-import Data.Map (Map, (!))
+import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -19,7 +19,7 @@ parseInput ls@(line : _) =
             (char, jy) <- zip row [0..]
             guard (char /= '.')
             return (char, [Coord ix jy])
-    in City { antennas = M.fromListWith (++) coords, nrRows, nrCols}
+    in City {antennas = M.fromListWith (++) coords, nrRows, nrCols}
 
 
 calcAntiNodesOfAFrequency :: City -> [Coord] -> Set Coord
