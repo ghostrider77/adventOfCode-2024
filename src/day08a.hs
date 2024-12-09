@@ -36,7 +36,7 @@ calcAntiNodesOfAFrequency (City _ nrRows nrCols) locations =
 
 
 getNrAntiNodeLocations :: City -> Int
-getNrAntiNodeLocations city@(City locations _ _ ) =
+getNrAntiNodeLocations city@(City locations _ _) =
     let frequencyLocations = M.elems locations
         antiNodes = foldl (\acc cs -> S.union acc (calcAntiNodesOfAFrequency city cs)) S.empty frequencyLocations
     in S.size antiNodes
