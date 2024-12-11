@@ -1,8 +1,8 @@
-convertToIntegerList :: String -> [Integer]
+convertToIntegerList :: String -> [Int]
 convertToIntegerList = map read . words
 
 
-blinkOfAnEye :: [Integer] -> Int -> Int
+blinkOfAnEye :: [Int] -> Int -> Int
 blinkOfAnEye stones n =
     let transformStone stone
             | stone == 0 = [1]
@@ -11,7 +11,7 @@ blinkOfAnEye stones n =
                     len = length s
                     k = len `div` 2
                 in if even len then [read $ take k s, read $ drop k s] else [2024 * stone]
-    in length $ foldl (\acc _ -> concatMap transformStone acc) stones [1..n]
+    in length $ iterate (concatMap transformStone) stones !! n
 
 
 main :: IO ()
