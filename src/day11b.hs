@@ -1,4 +1,7 @@
-import qualified Data.MemoTrie as M
+{-# LANGUAGE TupleSections #-}
+
+import Data.IntMap (IntMap)
+import qualified Data.IntMap as M
 
 
 convertToIntList :: String -> [Int]
@@ -15,13 +18,19 @@ transformStone stone
         in if even len then [read $ take k s, read $ drop k s] else [2024 * stone]
 
 
+oneBlink :: IntMap Int -> IntMap Int
+oneBlink stoneCounts =
+    let updatedCounts = do
+            (stone, count) <- M.assocs stoneCounts
+            stone' <- transformStone stone
+            return (stone', count)
+    in M.fromListWith (+) updatedCounts
+
+
 countStones :: [Int] -> Int -> Int
 countStones stones n =
-    let stoneTransformations =
-            let go 0 = const 1
-                go k = M.memo $ sum . map (stoneTransformations (k - 1)) . transformStone
-            in go
-    in sum $ map (stoneTransformations n) stones
+    let initialCounts = M.fromList $ map (, 1) stones
+    in sum $ M.elems $ iterate oneBlink initialCounts !! n
 
 
 main :: IO ()
