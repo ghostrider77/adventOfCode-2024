@@ -29,7 +29,7 @@ oneBlink stoneCounts =
 
 countStones :: [Int] -> Int -> Int
 countStones stones n =
-    let initialCounts = M.fromList $ map (, 1) stones
+    let initialCounts = M.fromListWith (+) $ map (, 1) stones
     in sum $ M.elems $ iterate oneBlink initialCounts !! n
 
 
