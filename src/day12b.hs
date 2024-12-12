@@ -52,8 +52,8 @@ calcPrice (Region coords) =
         getCorners (Coord x y) =
             [ (x % 1 - 1 % 2, y % 1 - 1 % 2)
             , (x % 1 - 1 % 2, y % 1 + 1 % 2)
-            , (x % 1 + 1 % 2, y % 1 + 1 / 2)
-            , (x % 1 + 1 % 2, y % 1 - 1 % 2)]
+            , (x % 1 + 1 % 2, y % 1 + 1 % 2)
+            , (x % 1 + 1 % 2, y % 1 - 1 % 2) ]
         corners = M.fromListWith (++) $ concatMap (\coord -> map (, [coord]) $ getCorners coord) $ S.toList coords
         nrSides1 = foldl (\acc cs -> let l = length cs in if l == 1 || l == 3 then acc + 1 else acc) 0 $ M.elems corners
         isValid [Coord x0 y0, Coord x1 y1] = x0 /= x1 && y0 /= y1
