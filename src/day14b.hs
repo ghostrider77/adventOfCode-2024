@@ -1,4 +1,5 @@
 import Data.List (intercalate)
+import Data.List.Extra (maximumOn)
 import Data.List.Split (splitOn)
 import qualified Data.Set as S
 
@@ -40,22 +41,18 @@ moveAllRobots state@State {robots, nrRows, nrCols} =
     in state {robots = map move robots}
 
 
-detectXMasTreeConfiguration :: State -> (Int, State)
+detectXMasTreeConfiguration :: State -> (State, Int)
 detectXMasTreeConfiguration initialState@State {nrRows, nrCols} =
     let maxIter = nrRows * nrCols
         x1 = nrCols `div` 3
         x2 = 2 * x1
         y1 = nrRows `div` 3
         y2 = 2 * y1
-        go maxK maxCount maxState state@State {robots} n
-            | n > maxIter = (maxK, maxState)
-            | otherwise =
-                let coords = map position robots
-                    middleRobots = length $ filter (\(Coord x y) -> x1 <= x && x <= x2 && y1 <= y && y <= y2) coords
-                    state' = moveAllRobots state
-                in if middleRobots > maxCount then go n middleRobots state state' (n + 1)
-                else go maxK maxCount maxState state' (n + 1)
-    in go (-1) (-1) initialState initialState 0
+        countMiddleRobots State {robots} =
+            let coords = map position robots
+            in length $ filter (\(Coord x y) -> x1 <= x && x <= x2 && y1 <= y && y <= y2) coords
+        states = iterate (\(state, k) -> (moveAllRobots state, k + 1)) (initialState, 0)
+    in maximumOn (\(state, _) -> countMiddleRobots state) $ take maxIter states
 
 
 main :: IO ()
@@ -64,6 +61,6 @@ main = do
     let nrRows = 103
     let nrCols = 101
     let initialState = State {robots = parseInput content, nrRows, nrCols}
-    let (seconds, robotConfig) = detectXMasTreeConfiguration initialState
+    let (robotConfig, seconds) = detectXMasTreeConfiguration initialState
     print robotConfig
     print seconds
