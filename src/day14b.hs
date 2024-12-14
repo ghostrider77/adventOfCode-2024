@@ -4,7 +4,6 @@ import Data.List.Split (splitOn)
 import qualified Data.Set as S
 
 data Coord = Coord Int Int deriving (Eq, Ord, Show)
-data Quadrant = TL | TR | BR | BL deriving (Eq, Ord)
 data Robot = Robot { position :: Coord, vX :: Int, vY :: Int } deriving Show
 data State = State { robots :: [Robot], nrRows :: Int, nrCols :: Int }
 
