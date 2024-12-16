@@ -62,9 +62,8 @@ addDist _ _ = Infinity
 getNeighbors :: Map Coord Tile -> Position -> [(Position, Int)]
 getNeighbors maze Position {position = coord@(Coord x y), direction} = case direction of
     North ->
-        let turns =
-                [(Position {position = coord, direction = East}, costOfTurn)
-                ,(Position {position = coord, direction = West}, costOfTurn)]
+        let turns = [(Position {position = coord, direction = East}, costOfTurn)
+                    ,(Position {position = coord, direction = West}, costOfTurn)]
             coord' = Coord (x - 1) y
         in if maze ! coord' == Empty then (Position {position = coord', direction}, 1) : turns else turns
     East ->
