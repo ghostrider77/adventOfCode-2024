@@ -1,9 +1,7 @@
-import Data.Heap (MinPrioHeap)
 import Data.List (find)
 import Data.Map (Map, (!))
 import Data.Maybe (fromJust)
 import Data.Set (Set)
-import qualified Data.Heap as H
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -14,11 +12,10 @@ data Position = Position { position :: Coord, direction :: Direction } deriving 
 data Tile = Empty | Wall deriving (Eq, Show)
 data Puzzle = Puzzle { maze :: Map Coord Tile, startPosition :: Position, targetCoord :: Coord } deriving Show
 
-data State = State { queue :: MinPrioHeap Distance Position
+data State = State { queue :: Set (Distance, Position)
                    , distances :: Map Position Distance
                    , finalizedPositions :: Set Position
-                   , backtrack :: Map Position (Set Position)
-                   }
+                   , backtrack :: Map Position (Set Position) }
 
 
 instance Show Distance where
@@ -101,7 +98,7 @@ updateDistances state pos dist neighbors =
                 let backtrack' = M.alter (alterFunc pos) position backtrack
                 in go currentState {backtrack = backtrack'} ns
             else
-                let queue' = H.insert (distanceThroughNode, position) queue
+                let queue' = S.insert (distanceThroughNode, position) queue
                     distances' = M.insert position distanceThroughNode distances
                     backtrack' = M.alter (alterFunc pos) position backtrack
                 in go currentState {queue = queue', distances = distances', backtrack = backtrack'} ns
@@ -111,19 +108,19 @@ updateDistances state pos dist neighbors =
 calcShortestDistance :: Puzzle -> ([Position], Map Position (Set Position))
 calcShortestDistance Puzzle {maze, startPosition, targetCoord} =
     let go state@State {queue, distances, finalizedPositions, backtrack} =
-            case H.view queue of
+            case S.lookupMin queue of
                 Nothing ->
                     let targetPositions = filter (\(p, dist) -> position p == targetCoord) $ M.assocs distances
                         minDist = minimum $ map snd targetPositions
                         targets = map fst $ filter(\(_, dist) -> dist == minDist) targetPositions
                     in (targets, backtrack)
-                Just ((dist, position), rest) ->
-                    if S.member position finalizedPositions then go state {queue = rest}
+                Just (dist, position) ->
+                    if S.member position finalizedPositions then go state {queue = S.deleteMin queue}
                     else
                         let neighbors = getNeighbors maze position
                             state' = updateDistances state position dist neighbors
                         in go state' { finalizedPositions = S.insert position finalizedPositions }
-    in go $ State (H.singleton (Dist 0, startPosition)) (M.singleton startPosition (Dist 0)) S.empty M.empty
+    in go $ State (S.singleton (Dist 0, startPosition)) (M.singleton startPosition (Dist 0)) S.empty M.empty
 
 
 collectCoordsInShortestPaths :: Puzzle -> Int

@@ -1,9 +1,7 @@
-import Data.Heap (MinPrioHeap)
 import Data.List (find)
 import Data.Map (Map, (!))
 import Data.Maybe (fromJust)
 import Data.Set (Set)
-import qualified Data.Heap as H
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -14,7 +12,7 @@ data Position = Position { position :: Coord, direction :: Direction } deriving 
 data Tile = Empty | Wall deriving (Eq, Show)
 data Puzzle = Puzzle { maze :: Map Coord Tile, startPosition :: Position, targetCoord :: Coord } deriving Show
 
-data State = State { queue :: MinPrioHeap Distance Position
+data State = State { queue :: Set (Distance, Position)
                    , distances :: Map Position Distance
                    , finalizedPositions :: Set Position }
 
@@ -94,7 +92,7 @@ updateDistances state neighbors dist =
                 currentDistance = M.findWithDefault Infinity position distances
             in if currentDistance <= distanceThroughNode then go currentState ns
             else
-                let queue' = H.insert (distanceThroughNode, position) queue
+                let queue' = S.insert (distanceThroughNode, position) queue
                     distances' =  M.insert position distanceThroughNode distances
                 in go currentState {queue = queue', distances = distances'} ns
     in go state neighbors
@@ -103,17 +101,17 @@ updateDistances state neighbors dist =
 calcShortestDistance :: Puzzle -> Distance
 calcShortestDistance Puzzle {maze, startPosition, targetCoord} =
     let go state@State {queue, distances, finalizedPositions} =
-            case H.view queue of
+            case S.lookupMin queue of
                 Nothing ->
                     let targetPositions = filter (\(p, dist) -> position p == targetCoord) $ M.assocs distances
                     in if null targetPositions then Infinity else minimum $ map snd targetPositions
-                Just ((dist, position), rest) ->
-                    if S.member position finalizedPositions then go state {queue = rest}
+                Just (dist, position) ->
+                    if S.member position finalizedPositions then go state {queue = S.deleteMin queue}
                     else
                         let neighbors = getNeighbors maze position
                             state' = updateDistances state neighbors dist
-                        in go state' { finalizedPositions = S.insert position finalizedPositions }
-    in go $ State (H.singleton (Dist 0, startPosition)) (M.singleton startPosition (Dist 0)) S.empty
+                        in go state' {finalizedPositions = S.insert position finalizedPositions}
+    in go $ State (S.singleton (Dist 0, startPosition)) (M.singleton startPosition (Dist 0)) S.empty
 
 
 main :: IO ()
