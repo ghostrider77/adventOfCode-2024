@@ -87,15 +87,14 @@ performOperation state@State {pointer, registers = regs@Registers {regA, regB, r
 
 isRegisterValueSuitable :: Int -> State -> Bool
 isRegisterValueSuitable targetOutput initialState =
-    let go state@State {program, pointer, output} =
-            case output of
-                Just result -> result == targetOutput
-                Nothing -> case (program !? pointer, program !? (pointer + 1)) of
-                    (Just opcode, Just k) ->
-                        let operator = parseOpcode opcode k
-                            state' = performOperation state operator
-                        in go state'
-                    _ -> False
+    let go state@State {program, pointer, output} = case output of
+            Just result -> result == targetOutput
+            Nothing -> case (program !? pointer, program !? (pointer + 1)) of
+                (Just opcode, Just k) ->
+                    let operator = parseOpcode opcode k
+                        state' = performOperation state operator
+                    in go state'
+                _ -> False
     in go initialState
 
 
@@ -104,10 +103,8 @@ getSmallestSuitableRegistryValue initialState =
     let ps = reverse $ V.toList (program initialState)
         generateStates state@State {registers = regs@Registers {regA}} =
             map (\k -> state {registers = regs { regA = regA * 8 + k }}) [0..7]
-        go currentStates [] =
-            case currentStates of
-                [] -> error "No solution has been found."
-                _ -> minimum $ map (regA . registers) currentStates
+        go [] [] = error "No solution has been found."
+        go currentStates [] = minimum $ map (regA . registers) currentStates
         go currentStates (target : rest) =
             let nextStates = concatMap (filter (isRegisterValueSuitable target) . generateStates) currentStates
             in go nextStates rest
