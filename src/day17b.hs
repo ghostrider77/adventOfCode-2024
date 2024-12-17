@@ -1,5 +1,4 @@
 import Data.Bits (xor)
-import Data.List (intercalate)
 import Data.List.Split (splitOn)
 import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
@@ -102,7 +101,7 @@ getSmallestSuitableRegistryValue :: State -> Int
 getSmallestSuitableRegistryValue initialState =
     let ps = reverse $ V.toList (program initialState)
         generateStates state@State {registers = regs@Registers {regA}} =
-            map (\k -> state {registers = regs { regA = regA * 8 + k }}) [0..7]
+            map (\k -> state {registers = regs {regA = regA * 8 + k}}) [0..7]
         go [] [] = error "No solution has been found."
         go currentStates [] = minimum $ map (regA . registers) currentStates
         go currentStates (target : rest) =
