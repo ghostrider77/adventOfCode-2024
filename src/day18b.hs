@@ -84,13 +84,16 @@ calcShortestDistance puzzle startCoord targetCoord =
 
 
 findPathBlockingCoord :: Puzzle -> Coord -> Coord -> [Coord] -> String
-findPathBlockingCoord initialPuzzle startCoord targetCoord bytes =
-    let go puzzle [] = error "No solution has been found."
-        go puzzle@Puzzle {maze} (b@(Coord x y) : bs) =
-            let puzzle' = puzzle {maze = M.insert b Wall maze}
-                d = calcShortestDistance puzzle' startCoord targetCoord
-            in if d == Infinity then show x ++ "," ++ show y else go puzzle' bs
-    in go initialPuzzle bytes
+findPathBlockingCoord puzzle@Puzzle {maze} startCoord targetCoord bytes =
+    let go left right
+            | left > right = error "No solution has been found."
+            | left == right = let Coord x y = bytes !! left in show x ++ "," ++ show y
+            | otherwise =
+                let ix = (left + right) `div` 2
+                    puzzle' = puzzle {maze = foldl (\acc b -> M.insert b Wall acc) maze $ take ix bytes}
+                    d = calcShortestDistance puzzle' startCoord targetCoord
+                in if d == Infinity then go left (ix - 1) else go (ix + 1) right
+    in go 0 (length bytes - 1)
 
 
 main :: IO ()
