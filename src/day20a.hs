@@ -53,7 +53,7 @@ getNrShorterPaths puzzle@Puzzle {start, target} maxCheatTime save =
                 d2 = distancesFromTarget ! c2
                 dist = abs (x1 - x2) + abs (y1 - y2)
             in dist <= maxCheatTime && targetDistance - (d1 + d2 + dist) >= save
-    in length $ filter isPairBelongsToShorterPath pairs
+    in foldl (\acc p -> if isPairBelongsToShorterPath p then acc + 1 else acc) 0 pairs
 
 
 main :: IO ()
