@@ -1,6 +1,8 @@
 import Data.List.Split (splitOn)
 import Data.Map (Map)
+import Data.Sequence ((|>), ViewL ((:< ), EmptyL))
 import qualified Data.Map as M
+import qualified Data.Sequence as Seq
 
 data Node = Node { name :: String, leftWire :: String, rightWire :: String, operator :: Bool -> Bool -> Bool }
 
@@ -37,16 +39,16 @@ convertToInt = foldl (\acc x -> 2 * acc + fromEnum x) 0
 
 evaluateGates :: [Node] -> Map String Bool -> Int
 evaluateGates gates values =
-    let go [] [] values = let bits = collectOutputs values in convertToInt bits
-        go unevaluated [] values = go [] unevaluated values
-        go unevaluated (node@Node {name, leftWire, rightWire, operator} : nodes) values =
-            case (M.lookup leftWire values, M.lookup rightWire values) of
-                (Just l, Just r) ->
-                    let v = operator l r
-                        values' = M.insert name v values
-                    in go unevaluated nodes values'
-                _ -> go (node : unevaluated) nodes values
-    in go [] gates values
+    let go queue values = case Seq.viewl queue of
+            EmptyL -> convertToInt $ collectOutputs values
+            (node@Node {name, leftWire, rightWire, operator} :< nodes) ->
+                case (M.lookup leftWire values, M.lookup rightWire values) of
+                    (Just l, Just r) ->
+                        let v = operator l r
+                            values' = M.insert name v values
+                        in go nodes values'
+                    _ -> go (nodes |> node) values
+    in go (Seq.fromList gates) values
 
 
 main :: IO ()
